@@ -1,0 +1,5 @@
+# Copy to config.yaml and fill your own values. Never commit config.yaml.
+api_id: 12345
+api_hash: "0123456789abcdef0123456789abcdef"
+bot: "@zakadeep_bot"
+message: "/checkin"
