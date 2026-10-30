@@ -4,3 +4,7 @@ qr_*.png
 *.log
 __pycache__/
 venv/
+web/config.yaml
+web/sessions/
+web/data/
+web/static/qr_*.png

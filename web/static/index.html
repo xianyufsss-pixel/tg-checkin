@@ -1,0 +1,20 @@
+<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>tg-checkin 账号池</title><style>body{font-family:system-ui,sans-serif;max-width:900px;margin:20px auto;padding:0 16px}table{width:100%;border-collapse:collapse}td,th{border:1px solid #ddd;padding:8px}button{padding:6px 12px;margin:2px}img{max-width:260px}.ok{color:green}.fail{color:red}</style></head>
+<body><h1>tg-checkin 账号池</h1><p>机器人：@zakadeep_bot，签到：/checkin，定时：每天 00:01，号间随机 30-120 秒</p>
+<h2>1. 设置（只填一次，存在服务器 config.yaml 里）</h2>
+api_id <input id="api_id" type="number"> api_hash <input id="api_hash"> <button onclick="saveCfg()">保存</button> <span id="cfgMsg"></span>
+<h2>2. 账号（7 个）</h2><table><thead><tr><th>账号</th><th>状态</th><th>操作</th></tr></thead><tbody id="acc"></tbody></table>
+<div id="qrBox"></div>
+<h2>3. 签到</h2><button onclick="checkinAll()">立即签到全部 7 个号</button> <span id="ckMsg"></span>
+<h2>4. 日志</h2><button onclick="loadLogs()">刷新日志</button><table><thead><tr><th>时间</th><th>账号</th><th>结果</th><th>机器人回复</th></tr></thead><tbody id="logs"></tbody></table>
+<script>
+async function j(u,o){const r=await fetch(u,o);return r.json()}
+async function loadAcc(){const a=await j('/api/accounts');document.getElementById('acc').innerHTML=a.map(x=>`<tr><td>${x.name}</td><td>${x.status}</td><td><button onclick="qr('${x.name}')">扫码登录</button> <button onclick="one('${x.name}')">单号签到</button></td></tr>`).join('')}
+async function qr(n){const r=await j('/api/qr/'+n,{method:'POST'});if(!r.ok){alert(r.detail||'请先填设置');return}document.getElementById('qrBox').innerHTML=`<p>${n} 请马上扫码（过期请重新点生成）</p><img src="${r.qr_url}?t=${Date.now()}"><button onclick="qrStatus('${n}')">我已扫码，检查</button> <span id="qrSt"></span>`}
+async function qrStatus(n){const r=await j('/api/qr/'+n+'/status');document.getElementById('qrSt').innerText=r.status;loadAcc()}
+async function saveCfg(){const r=await j('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({api_id:parseInt(document.getElementById('api_id').value),api_hash:document.getElementById('api_hash').value})});document.getElementById('cfgMsg').innerText=r.ok?'已保存':'保存失败'}
+async function checkinAll(){document.getElementById('ckMsg').innerText='正在跑 7 个号，号间随机间隔，请稍等…';const r=await j('/api/checkin',{method:'POST'});document.getElementById('ckMsg').innerText=JSON.stringify(r);loadLogs()}
+async function one(n){const r=await j('/api/checkin/'+n,{method:'POST'});alert(JSON.stringify(r));loadLogs()}
+async function loadLogs(){const a=await j('/api/logs');document.getElementById('logs').innerHTML=a.map(x=>`<tr><td>${x.ts}</td><td>${x.account}</td><td class="${x.ok?'ok':'fail'}">${x.ok?'成功':'失败'}</td><td>${x.reply}</td></tr>`).join('')}
+loadAcc();loadLogs();
+</script></body></html>
